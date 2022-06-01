@@ -14,9 +14,12 @@ jenkins-namespace-delete:
 
 jenkins-chart-install: jenkins-namespace-create
 	helm upgrade -n $(JENKINS_NAMESPACE_NAME) -f jenkins/values.yml --install $(HELM_RELEASE_NAME) jenkins/jenkins
+	kubectl wait --timeout=90s -n jenkins --for=condition=ready pod -l app.kubernetes.io/name=jenkins
+	kubectl apply -f jenkins/ingress.yml -n $(JENKINS_NAMESPACE_NAME)
 
 jenkins-chart-uninstall:
 	helm uninstall -n $(JENKINS_NAMESPACE_NAME) $(HELM_RELEASE_NAME)
+	kubectl delete -f jenkins/ingress.yml -n $(JENKINS_NAMESPACE_NAME)
 
 jenkins-get-admin-password:
 	kubectl exec --namespace jenkins -it svc/myjenkins -c jenkins -- /bin/cat /run/secrets/chart-admin-password && echo
