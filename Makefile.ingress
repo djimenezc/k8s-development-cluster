@@ -1,38 +1,70 @@
 #Ingress controller
 
-k8s-ambassador-add-helm-repo:
+ingress-echo-api-create-namespace:
+	-kubectl create namespace test
+
+ingress-echo-api-deploy: ingress-echo-api-create-namespace
+	kubectl apply -f ingress/usage.yml -n test
+
+ingress-echo-api-delete: ingress-echo-api-create-namespace
+	kubectl delete -f ingress/usage.yml -n test
+
+#Ambassador
+ingress-ambassador-add-helm-repo:
 	helm repo add datawire https://app.getambassador.io
 	helm repo update
 
-k8s-ambassador-install: k8s-ambassador-add-helm-repo
+ingress-ambassador-install: ingress-ambassador-add-helm-repo
 	kubectl create namespace ambassador
 	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/2.2.2/aes-crds.yaml
 	kubectl wait --timeout=90s --for=condition=available deployment emissary-apiext -n emissary-system
 	helm install edge-stack --namespace ambassador datawire/edge-stack && \
 	kubectl -n ambassador wait --for condition=available --timeout=90s deploy -lproduct=aes
 
-k8s-ambassador-delete:
-	helm uninstall edge-stack --namespace ambassador
+ingress-ambassador-delete:
+	-helm uninstall edge-stack --namespace ambassador
 	kubectl delete -f https://app.getambassador.io/yaml/edge-stack/2.2.2/aes-crds.yaml
 	kubectl delete namespace ambassador
+
+ingress-ambassador-install-kind:
+	kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
+	kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
+	kubectl wait --timeout=180s -n ambassador --for=condition=deployed ambassadorinstallations/ambassador
+
+ingress-ambassador-delete-kind:
+	kubectl delete -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
+	kubectl delete -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
+
 
 #https://doc.traefik.io/traefik/getting-started/concepts/
 #https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#traefik-v22
 
-k8s-traefik-add-helm-repo:
+ingress-traefik-add-helm-repo:
 	helm repo add traefik https://helm.traefik.io/traefik
 	helm repo update
 
-k8s-traefik-install: k8s-traefik-add-helm-repo
+ingress-traefik-install: ingress-traefik-add-helm-repo
 	kubectl create namespace traefik
 	helm install traefik --namespace traefik traefik/traefik
 
-k8s-traefik-delete:
+ingress-traefik-delete:
 	helm uninstall traefik --namespace traefik
 	kubectl delete namespace traefik
 
-k8s-traefik-port-forwarding-dashboard:
+ingress-traefik-port-forwarding-dashboard:
 	kubectl port-forward -n traefik $(shell kubectl get pods -n traefik --selector "app.kubernetes.io/name=traefik" --output=name) 9003:9000
 
-k8s-traefik-route-dashboard:
+ingress-traefik-route-dashboard:
 	kubectl apply -f ingress/traefik-dashboard-route.yml -n traefik
+
+
+#NGINX
+ingress-kind-nginx-install:
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+	kubectl wait --namespace ingress-nginx \
+      --for=condition=ready pod \
+      --selector=app.kubernetes.io/component=controller \
+      --timeout=90s
+
+ingress-kind-nginx-delete:
+	kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml

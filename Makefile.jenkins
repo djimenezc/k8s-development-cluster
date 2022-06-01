@@ -1,0 +1,26 @@
+HELM_RELEASE_NAME ?= myjenkins
+JENKINS_NAMESPACE_NAME ?= jenkins
+JENKINS_LOCAL_PORT ?=8086
+
+jenkins-chart-add:
+	helm repo add jenkins https://charts.jenkins.io
+	helm repo update
+
+jenkins-namespace-create:
+	-kubectl create namespace $(JENKINS_NAMESPACE_NAME)
+
+jenkins-namespace-delete:
+	kubectl delete namespace $(JENKINS_NAMESPACE_NAME)
+
+jenkins-chart-install: jenkins-namespace-create
+	helm upgrade -n $(JENKINS_NAMESPACE_NAME) -f jenkins/values.yml --install $(HELM_RELEASE_NAME) jenkins/jenkins
+
+jenkins-chart-uninstall:
+	helm uninstall -n $(JENKINS_NAMESPACE_NAME) $(HELM_RELEASE_NAME)
+
+jenkins-get-admin-password:
+	kubectl exec --namespace jenkins -it svc/myjenkins -c jenkins -- /bin/cat /run/secrets/chart-admin-password && echo
+
+jenkins-port-forwarding:
+	@echo http://127.0.0.1:$(JENKINS_LOCAL_PORT)
+	kubectl --namespace $(JENKINS_NAMESPACE_NAME) port-forward svc/myjenkins $(JENKINS_LOCAL_PORT):8080
