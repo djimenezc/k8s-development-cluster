@@ -1,0 +1,38 @@
+#Ingress controller
+
+k8s-ambassador-add-helm-repo:
+	helm repo add datawire https://app.getambassador.io
+	helm repo update
+
+k8s-ambassador-install: k8s-ambassador-add-helm-repo
+	kubectl create namespace ambassador
+	kubectl apply -f https://app.getambassador.io/yaml/edge-stack/2.2.2/aes-crds.yaml
+	kubectl wait --timeout=90s --for=condition=available deployment emissary-apiext -n emissary-system
+	helm install edge-stack --namespace ambassador datawire/edge-stack && \
+	kubectl -n ambassador wait --for condition=available --timeout=90s deploy -lproduct=aes
+
+k8s-ambassador-delete:
+	helm uninstall edge-stack --namespace ambassador
+	kubectl delete -f https://app.getambassador.io/yaml/edge-stack/2.2.2/aes-crds.yaml
+	kubectl delete namespace ambassador
+
+#https://doc.traefik.io/traefik/getting-started/concepts/
+#https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#traefik-v22
+
+k8s-traefik-add-helm-repo:
+	helm repo add traefik https://helm.traefik.io/traefik
+	helm repo update
+
+k8s-traefik-install: k8s-traefik-add-helm-repo
+	kubectl create namespace traefik
+	helm install traefik --namespace traefik traefik/traefik
+
+k8s-traefik-delete:
+	helm uninstall traefik --namespace traefik
+	kubectl delete namespace traefik
+
+k8s-traefik-port-forwarding-dashboard:
+	kubectl port-forward -n traefik $(shell kubectl get pods -n traefik --selector "app.kubernetes.io/name=traefik" --output=name) 9003:9000
+
+k8s-traefik-route-dashboard:
+	kubectl apply -f ingress/traefik-dashboard-route.yml -n traefik
