@@ -1,0 +1,56 @@
+UBUNTU_ISO ?= ubuntu-22.04-live-server-arm64.iso
+
+#https://graspingtech.com/ubuntu-desktop-18.04-virtual-machine-macos-qemu/
+
+qemu-dependencies-install:
+	brew install qemu utm
+
+qemu-ubuntu-img-arm-download:
+	wget https://cdimage.ubuntu.com/releases/22.04/release/$(UBUNTU_ISO)
+
+qemu-create-disk-image:
+	qemu-img create -f qcow2 ./disk.qcow2 10G
+	dd if=/dev/zero conv=sync bs=1m count=64 of=ovmf_vars.fd
+
+qemu-clean:
+	rm -f ./disk.qcow2
+	rm -f ./ovmf_vars.fd
+	rm -f ./ubuntu-22.04-live-server-arm64.iso
+
+qemu-ubuntu-start:
+	qemu-system-aarch64 \
+        -accel hvf \
+        -m 2048 \
+        -cpu cortex-a57 -M virt,highmem=off  \
+        -drive file=/opt/homebrew/Cellar/qemu/7.0.0/share/qemu/edk2-aarch64-code.fd,if=pflash,format=raw,readonly=on \
+        -drive file=./ovmf_vars.fd,if=pflash,format=raw \
+        -serial telnet::4444,server,nowait \
+        -drive if=none,file=./disk.qcow2,format=qcow2,id=hd0 \
+        -device virtio-blk-device,drive=hd0,serial="dummyserial" \
+        -device virtio-net-device,netdev=net0 \
+        -netdev user,id=net0 \
+        -vga none -device ramfb \
+        -cdrom ./$(UBUNTU_ISO) \
+        -device usb-ehci -device usb-kbd -device usb-mouse -usb \
+        -monitor stdio
+
+qemu-ubuntu-start2:
+	cp /usr/share/qemu-efi-aarch64/QEMU_EFI.fd flash0.img
+	qemu-img create -f qcow2 hda.qcow2 16G
+	qemu-system-aarch64 \
+ 		-M virt -cpu cortex-a57 -m 2048 \
+		-device virtio-net-pci,netdev=net0,romfile="" \
+		-netdev type=user,id=net0 \
+		-device virtio-blk-pci,drive=drv0 \
+		-object rng-random,filename=/dev/urandom,id=rng0 \
+		-device virtio-rng-pci,rng=rng0 \
+		-drive format=qcow2,file=hda.qcow2,if=none,id=drv0 \
+		-drive if=pflash,format=raw,file=flash0.img,readonly \
+		-drive if=pflash,format=raw,file=flash1.img \
+		-nographic \
+		-device virtio-scsi \
+		-device scsi-cd,drive=cd \
+		-drive if=none,id=cd,file=./$(UBUNTU_ISO)
+
+ubuntu-container-start:
+	docker run -t -i ubuntu /bin/bash

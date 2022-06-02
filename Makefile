@@ -16,3 +16,4 @@ kind-get-cluster-info:
 -include ./Makefile.crossplane
 -include ./Makefile.prometheus
 -include ./Makefile.grafana
+-include ./Makefile.qemu

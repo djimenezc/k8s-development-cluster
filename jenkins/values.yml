@@ -19,7 +19,7 @@ controller:
   # Used for label app.kubernetes.io/component
   componentName: "jenkins-controller"
   image: "jenkins/jenkins"
-  # tag: "2.332.3-jdk11"
+  tag: "2.350-jdk11"
   tagLabel: jdk11
   imagePullPolicy: "Always"
   imagePullSecretName:
@@ -46,7 +46,7 @@ controller:
   # If you disable the non-Jenkins identity store and instead use the Jenkins internal one,
   # you should revert controller.adminUser to your preferred admin user:
   adminUser: "admin"
-  # adminPassword: <defaults to random>
+  adminPassword: "admin"
   admin:
     existingSecret: ""
     userKey: jenkins-admin-user
@@ -93,7 +93,8 @@ controller:
   # If you are not using the provided ingress you can specify `controller.jenkinsUrl` to change the url definition.
   # jenkinsUrl: ""
   # If you set this prefix and use ingress controller then you might want to set the ingress path below
-  # jenkinsUriPrefix: "/jenkins"
+  #
+  jenkinsUriPrefix: "/jenkins"
   # Enable pod security context (must be `true` if podSecurityContextOverride, runAsUser or fsGroup are set)
   usePodSecurityContext: true
   # Note that `runAsUser`, `fsGroup`, and `securityContextCapabilities` are

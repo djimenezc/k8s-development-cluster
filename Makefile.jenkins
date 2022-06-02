@@ -1,6 +1,10 @@
 HELM_RELEASE_NAME ?= myjenkins
 JENKINS_NAMESPACE_NAME ?= jenkins
 JENKINS_LOCAL_PORT ?=8086
+JENKINS_CHART_VALUES ?= jenkins/values.yml
+CONTAINER_NAME ?= jenkins-custom
+DOCKER_REPO ?= docker.io/djimenezc
+CONTAINER_TAG ?= 1.0.0
 
 jenkins-chart-add:
 	helm repo add jenkins https://charts.jenkins.io
@@ -13,8 +17,8 @@ jenkins-namespace-delete:
 	kubectl delete namespace $(JENKINS_NAMESPACE_NAME)
 
 jenkins-chart-install: jenkins-namespace-create
-	helm upgrade -n $(JENKINS_NAMESPACE_NAME) -f jenkins/values.yml --install $(HELM_RELEASE_NAME) jenkins/jenkins
-	kubectl wait --timeout=90s -n jenkins --for=condition=ready pod -l app.kubernetes.io/name=jenkins
+	helm upgrade -n $(JENKINS_NAMESPACE_NAME) -f $(JENKINS_CHART_VALUES) --install $(HELM_RELEASE_NAME) jenkins/jenkins
+	kubectl wait --timeout=180s -n jenkins --for=condition=ready pod -l app.kubernetes.io/name=jenkins
 	kubectl apply -f jenkins/ingress.yml -n $(JENKINS_NAMESPACE_NAME)
 
 jenkins-chart-uninstall:
@@ -27,3 +31,26 @@ jenkins-get-admin-password:
 jenkins-port-forwarding:
 	@echo http://127.0.0.1:$(JENKINS_LOCAL_PORT)
 	kubectl --namespace $(JENKINS_NAMESPACE_NAME) port-forward svc/myjenkins $(JENKINS_LOCAL_PORT):8080
+
+jenkins-docker-build:
+	docker build --platform linux/arm64 \
+		-t ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG} ./jenkins
+
+jenkins-docker-push:
+	docker push ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG}
+
+jenkins-docker-run:
+	-@docker network create jenkins
+	docker run \
+      --name jenkins \
+      --rm \
+      --network jenkins \
+      --platform linux/arm64 \
+      --env DOCKER_HOST=tcp://docker:2376 \
+      --env DOCKER_CERT_PATH=/certs/client \
+      --env DOCKER_TLS_VERIFY=1 \
+      --publish 8080:8080 \
+      --publish 50000:50000 \
+      --volume jenkins-data:/var/jenkins_home \
+      --volume jenkins-docker-certs:/certs/client:ro \
+      ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG}
