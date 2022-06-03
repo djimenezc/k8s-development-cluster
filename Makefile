@@ -1,13 +1,13 @@
 CLUSTER_NAME ?= dev-cluster
 
 #k8s
-kind-create-cluster:
+kind-cluster-create:
 	kind create cluster --name $(CLUSTER_NAME) --config kind/kind-config.yml
 
-kind-destroy-cluster:
+kind-cluster-destroy:
 	kind delete cluster --name $(CLUSTER_NAME)
 
-kind-get-cluster-info:
+kind-cluster-get-info:
 	kubectl cluster-info --context kind-dev-cluster
 
 -include ./Makefile.argocd

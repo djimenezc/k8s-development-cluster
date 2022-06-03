@@ -5,6 +5,7 @@ JENKINS_CHART_VALUES ?= jenkins/values.yml
 CONTAINER_NAME ?= jenkins-custom
 DOCKER_REPO ?= docker.io/djimenezc
 CONTAINER_TAG ?= 1.0.0
+DOCKER_PLATFORM ?= linux/arm64
 
 jenkins-chart-add:
 	helm repo add jenkins https://charts.jenkins.io
@@ -32,9 +33,16 @@ jenkins-port-forwarding:
 	@echo http://127.0.0.1:$(JENKINS_LOCAL_PORT)
 	kubectl --namespace $(JENKINS_NAMESPACE_NAME) port-forward svc/myjenkins $(JENKINS_LOCAL_PORT):8080
 
+jenkins-kind-get-list-plugins:
+	curl -kLsS "http://localhost/jenkins/pluginManager/api/json?pretty=1&tree=plugins\[shortName,longName,version\]"
+
+#docker
+
 jenkins-docker-build:
-	docker build --platform linux/arm64 \
-		-t ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG} ./jenkins
+	docker build --platform $(docker_platform) \
+		--force-rm \
+		--no-cache \
+		-t ${docker_repo}/${container_name}:${container_tag} ./jenkins
 
 jenkins-docker-push:
 	docker push ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG}
@@ -54,3 +62,12 @@ jenkins-docker-run:
       --volume jenkins-data:/var/jenkins_home \
       --volume jenkins-docker-certs:/certs/client:ro \
       ${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_TAG}
+
+jenkins-docker-ssh:
+	docker exec -it jenkins /bin/bash
+
+jenkins-docker-volume-rm:
+	docker volume rm jenkins-data
+
+jenkins-docker-get-list-plugins:
+	curl -kLsS "http://localhost:8080/pluginManager/api/json?pretty=1&tree=plugins\[shortName,longName,version\]"
