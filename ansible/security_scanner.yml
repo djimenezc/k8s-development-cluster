@@ -1,0 +1,7 @@
+- hosts: tag_Name_david_security_scanner
+  become: true
+#  vars_files:
+#    - vars.yml
+  tasks:
+    - name: Echo a hello message
+      command: echo hello

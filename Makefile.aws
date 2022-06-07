@@ -6,7 +6,7 @@ AMI_ID ?= ami-0c1bc246476a5572b
 INSTANCE_TYPE ?= t3.medium
 ROLE_NAME ?= security-scanner-ec2
 KEY_PAIR ?= david-key
-INSTANCE_NAME ?= david-security-scanner
+INSTANCE_NAME ?= david_security_scanner
 
 #define get_security_instance_id
 #    aws ec2 describe-instances --filters 'Name=tag:Name,Values=david-security-scanner' 'Name=instance-state-name,Values=running' --query 'Reservations[*].Instances[*].[InstanceId]' --output text
@@ -27,6 +27,9 @@ aws-ec2-launch:
 aws-ec2-get-ids:
 	@echo $(INSTANCE_ID)
 
+aws-ec2-tag:
+	aws ec2 create-tags --resources $(INSTANCE_ID) --tags Key=Testing,Value=true Key=Owner,Value=david;
+
 aws-ec2-terminate:
 	aws ec2 terminate-instances --instance-ids $(INSTANCE_ID)
 
@@ -44,7 +47,7 @@ aws-ssm-connect-ssh:
 
 #IAM
 aws-iam-role-create:
-	aws iam create-role --role-name $(ROLE_NAME) --assume-role-policy-document file://aws/security-scanner-policy.json
+	aws iam create-role --role-name $(ROLE_NAME) --assume-role-policy-document file://aws/assume-role-policy.json
 	${MAKE} aws-iam-role-attach-policy-ssm
 	${MAKE} aws-iam-role-show-attached-policy
 	aws iam create-instance-profile --instance-profile-name $(ROLE_NAME)

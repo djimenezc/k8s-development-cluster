@@ -1,0 +1,20 @@
+---
+plugin: amazon.aws.aws_ec2
+filters:
+  tag:Name:
+    - david_security_scanner
+regions:
+  - eu-west-1
+keyed_groups:
+  - key: placement.region
+    separator: ''
+  - key: tags
+    prefix: tag
+strict_permissions: false
+use_contrib_script_compatible_sanitization: yes
+hostnames:
+  - private-ip-address
+compose:
+  # Use the instance_id to connect to the host
+  # (note: this does not modify inventory_hostname, which is set via I(hostnames))
+  ansible_host: instance_id

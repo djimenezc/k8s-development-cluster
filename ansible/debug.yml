@@ -1,0 +1,17 @@
+---
+- name: Some debugger
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    host_prefix: "{{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.netmask }}"
+  tasks:
+    - name: "debugging for development purposes"
+      debug:
+        msg: "ansible limit {{ ansible_limit }} ansible hostname {{ ansible_hostname }} and inventory_hostname {{ inventory_hostname }} with group_names{{ group_names }} ansible_host {{ ansible_host }}"
+    - name: "debugging magic purposes"
+      debug:
+        msg: "ansible_play_hosts {{ ansible_play_hosts }} and ansible_play_hosts_all {{ ansible_play_hosts_all }} with ansible_play_batch{{ ansible_play_batch }}"
+    - name: "debugging ansible limit"
+      debug:
+        msg: "ansible_limit {{ ansible_limit }}"
