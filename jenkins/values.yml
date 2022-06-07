@@ -249,6 +249,7 @@ controller:
     - workflow-aggregator:581.v0c46fa_697ffd
     - git:4.11.3
     - configuration-as-code:1429.v09b_044a_c93de
+    - job-dsl:1.79
     - github:1.34.3
     - ws-cleanup:0.42
     - warnings-ng:9.12.0
@@ -374,10 +375,47 @@ controller:
   # etc.  Best reference is https://<jenkins_url>/configuration-as-code/reference.  The example below creates a welcome message:
   JCasC:
     defaultConfig: true
-    configScripts: {}
-    #  welcome-message: |
-    #    jenkins:
-    #      systemMessage: Welcome to our CI\CD server.  This Jenkins is configured and managed 'as code'.
+    configScripts:
+      credentials: |
+        system:
+          domainCredentials:
+            - credentials:
+                - string:
+                    description: "github access token"
+                    id: "github_app_token"
+                    scope: GLOBAL
+                    secret: "aadsd"
+                - usernamePassword:
+                    description: "github access username password"
+                    id: "github_username_pass"
+                    password: "asdasds"
+                    scope: GLOBAL
+                    username: "dasdsa"
+
+      pipeline-job: |
+        jobs:
+          - script: >
+              pipelineJob('DEV-AWS') {
+                definition {
+                  cpsScm {
+                    scm {
+                      git {
+                        remote {
+                          url('https://github.com/Valassis-Digital-Media/DEV-AWS')
+                          credentials('5510c120-2985-4c24-8ecd-067b95957e86')
+                        }
+                        branch('*/master')
+                      }
+                    }
+                    scriptPath("Jenkinsfile")
+                    lightweight()
+                  }
+                }
+              }
+
+    welcome-message: |
+      jenkins:
+        systemMessage: Welcome to our CI\CD server.  This Jenkins is configured and managed 'as code'.
     # Ignored if securityRealm is defined in controller.JCasC.configScripts and
     securityRealm: |-
       local:
@@ -397,7 +435,6 @@ controller:
   #   image: "alpine:3.7"
   #   imagePullPolicy: Always
   #   command: [ "uname", "-a" ]
-
   sidecars:
     configAutoReload:
       # If enabled: true, Jenkins Configuration as Code will be reloaded on-the-fly without a reboot.  If false or not-specified,

@@ -17,3 +17,4 @@ kind-cluster-get-info:
 -include ./Makefile.prometheus
 -include ./Makefile.grafana
 -include ./Makefile.qemu
+-include ./Makefile.aws

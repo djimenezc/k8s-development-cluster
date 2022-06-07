@@ -1,0 +1,68 @@
+#backend-vpc
+AWS_SG ?= sg-002271feae348b68c
+#
+AWS_SUBNET_ID ?= subnet-067387b658830caa3
+AMI_ID ?= ami-0c1bc246476a5572b
+INSTANCE_TYPE ?= t3.medium
+ROLE_NAME ?= security-scanner-ec2
+KEY_PAIR ?= david-key
+INSTANCE_NAME ?= david-security-scanner
+
+#define get_security_instance_id
+#    aws ec2 describe-instances --filters 'Name=tag:Name,Values=david-security-scanner' 'Name=instance-state-name,Values=running' --query 'Reservations[*].Instances[*].[InstanceId]' --output text
+#endef
+
+INSTANCE_ID ?= $(shell aws ec2 describe-instances --filters 'Name=tag:Name,Values=david-security-scanner' 'Name=instance-state-name,Values=running,stopped' --query 'Reservations[*].Instances[*].[InstanceId]' --output text)
+
+aws-vault:
+	aws-vault exec default
+
+aws-ec2-describe-instances:
+	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,AZ:Placement.AvailabilityZone,Name:Tags[?Key==`Name`]|[0].Value,Subnet:SubnetId,InstanceType:InstanceType,State: State.Name}'\
+ 	--filters 'Name=instance-state-name,Values=running,stopped,stopping'  --output table
+
+aws-ec2-launch:
+	aws ec2 run-instances --image-id $(AMI_ID) --count 1 --instance-type $(INSTANCE_TYPE) --key-name $(KEY_PAIR) --security-group-ids $(AWS_SG) --subnet-id $(AWS_SUBNET_ID) --iam-instance-profile Name="$(ROLE_NAME)"	--tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=$(INSTANCE_NAME)}]'
+
+aws-ec2-get-ids:
+	@echo $(INSTANCE_ID)
+
+aws-ec2-terminate:
+	aws ec2 terminate-instances --instance-ids $(INSTANCE_ID)
+
+aws-ec2-stop:
+	aws ec2 stop-instances --instance-ids $(INSTANCE_ID)
+
+aws-ec2-start:
+	aws ec2 start-instances --instance-ids $(INSTANCE_ID)
+
+aws-ssm-connect:
+	aws ssm start-session --target $(INSTANCE_ID)
+
+aws-ssm-connect-ssh:
+	ssh ec2-user@$(INSTANCE_ID) -i ~/.ssh/$(KEY_PAIR).pem
+
+#IAM
+aws-iam-role-create:
+	aws iam create-role --role-name $(ROLE_NAME) --assume-role-policy-document file://aws/security-scanner-policy.json
+	${MAKE} aws-iam-role-attach-policy-ssm
+	${MAKE} aws-iam-role-show-attached-policy
+	aws iam create-instance-profile --instance-profile-name $(ROLE_NAME)
+	aws iam add-role-to-instance-profile --instance-profile-name $(ROLE_NAME) --role-name $(ROLE_NAME)
+
+aws-iam-associate-instance-profile:
+	aws ec2 associate-iam-instance-profile --iam-instance-profile Name=$(ROLE_NAME) --instance-id $(INSTANCE_ID)
+
+aws-iam-role-remove:
+	-aws iam delete-instance-profile --instance-profile-name $(ROLE_NAME)
+	-aws iam detach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore --role-name $(ROLE_NAME)
+	aws iam delete-role --role-name $(ROLE_NAME)
+
+aws-iam-role-attach-policy-ssm:
+	aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore --role-name $(ROLE_NAME)
+
+aws-iam-role-show-attached-policy:
+	aws iam list-attached-role-policies --role-name $(ROLE_NAME)
+
+aws-iam-ec2-attach-role:
+	aws ec2 associate-iam-instance-profile --instance-id $(INSTANCE_ID) --iam-instance-profile Name=
