@@ -19,3 +19,4 @@ kind-cluster-get-info:
 -include ./Makefile.qemu
 -include ./Makefile.aws
 -include ./ansible/Makefile
+-include ./scripts/Makefile

@@ -18,7 +18,7 @@ aws-vault:
 	aws-vault exec default
 
 aws-ec2-describe-instances:
-	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,AZ:Placement.AvailabilityZone,Name:Tags[?Key==`Name`]|[0].Value,Subnet:SubnetId,InstanceType:InstanceType,State: State.Name}'\
+	aws ec2 describe-instances --query 'Reservations[*].Instances[*].{Instance:InstanceId,AZ:Placement.AvailabilityZone,Name:Tags[?Key==`Name`]|[0].Value,Subnet:SubnetId,InstanceType:InstanceType,State: State.Name, Ip: PrivateIpAddress }'\
  	--filters 'Name=instance-state-name,Values=running,stopped,stopping'  --output table
 
 aws-ec2-launch:

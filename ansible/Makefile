@@ -17,9 +17,10 @@ ansible-inventory-list:
 	@cd ${SELF_DIR}
 	ansible-inventory --list $(INVENTORY_PARAM)
 
-ansible-galaxy-install:
+ansible-galaxy:
 	@echo "Installing galaxy requirements"
-	@!(test -f requirements.yml) && echo "No requirements found" || ansible-galaxy install -r requirements.yml -f
+	@!(test -f ${SELF_DIR}requirements.yml) && echo "No requirements found" || \
+	ansible-galaxy install -r ${SELF_DIR}requirements.yml -f
 
 ansible-ping:
 	cd ${SELF_DIR}
