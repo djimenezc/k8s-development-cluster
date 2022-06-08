@@ -16,6 +16,10 @@
         - jq
         - telnet
         - tmux
+        - openssl-devel
+        - perl
+        - perl-Net-SSLeay
+        - perl-Crypt-SSLeay
     - name: Start service docker if not started
       service:
         name: docker
