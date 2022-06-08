@@ -8,11 +8,7 @@ ROLE_NAME ?= security-scanner-ec2
 KEY_PAIR ?= david-key
 INSTANCE_NAME ?= david_security_scanner
 
-#define get_security_instance_id
-#    aws ec2 describe-instances --filters 'Name=tag:Name,Values=david-security-scanner' 'Name=instance-state-name,Values=running' --query 'Reservations[*].Instances[*].[InstanceId]' --output text
-#endef
-
-INSTANCE_ID ?= $(shell aws ec2 describe-instances --filters 'Name=tag:Name,Values=david-security-scanner' 'Name=instance-state-name,Values=running,stopped' --query 'Reservations[*].Instances[*].[InstanceId]' --output text)
+INSTANCE_ID ?= $(shell aws ec2 describe-instances --filters 'Name=tag:Name,Values=$(INSTANCE_NAME)' 'Name=instance-state-name,Values=running,stopped' --query 'Reservations[*].Instances[*].[InstanceId]' --output text)
 
 aws-vault:
 	aws-vault exec default
@@ -42,8 +38,11 @@ aws-ec2-start:
 aws-ssm-connect:
 	aws ssm start-session --target $(INSTANCE_ID)
 
-aws-ssm-connect-ssh:
+aws-ssh-connect:
 	ssh ec2-user@$(INSTANCE_ID) -i ~/.ssh/$(KEY_PAIR).pem
+
+aws-ssh-connect-tmux:
+	ssh ec2-user@$(INSTANCE_ID) -i ~/.ssh/$(KEY_PAIR).pem -t "tmux new-session -s $(INSTANCE_NAME) || tmux attach-session -t $(INSTANCE_NAME)"
 
 #IAM
 aws-iam-role-create:

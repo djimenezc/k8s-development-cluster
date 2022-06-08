@@ -15,6 +15,7 @@
         - docker
         - jq
         - telnet
+        - tmux
     - name: Start service docker if not started
       service:
         name: docker
