@@ -20,3 +20,4 @@ kind-cluster-get-info:
 -include ./Makefile.aws
 -include ./scripts/Makefile
 -include ./ansible/Makefile
+-include ./terraform/Makefile
