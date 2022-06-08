@@ -29,11 +29,11 @@ ansible-ping:
 ansible-playbook:
 	@echo "Executing playbook:${ANSIBLE_PLAYBOOK_NAME} & \
 	region:${AWS_DEFAULT_REGION} && inventory_param $(INVENTORY_PARAM)"
-	!(test -f ${SELF_DIR}${ANSIBLE_PLAYBOOK_NAME}.yml) && echo "No ${ANSIBLE_PLAYBOOK_NAME} playbook found" \
+	!(test -f ${SELF_DIR}${ANSIBLE_PLAYBOOK_NAME}.yml) && echo "No ${SELF_DIR}${ANSIBLE_PLAYBOOK_NAME} playbook found" \
 	 || ansible-playbook ${SELF_DIR}${ANSIBLE_PLAYBOOK_NAME}.yml ${INVENTORY_PARAM} ${ANSIBLE_HOSTS_SUBSET}
 
 ansible-playbook-debug:
 	${MAKE} ansible-playbook ANSIBLE_PLAYBOOK_NAME=debug
 
 ansible-playbook-security-scanner:
-	${MAKE} ansible-playbook ANSIBLE_PLAYBOOK_NAME=security_scanner
+	${MAKE} ansible-playbook ANSIBLE_PLAYBOOK_NAME=configure_security_scanner
