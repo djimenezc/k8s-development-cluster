@@ -1,4 +1,5 @@
 CLUSTER_NAME ?= dev-cluster
+export INGRESS_HOST=127.0.0.1
 
 #k8s
 kind-cluster-create:

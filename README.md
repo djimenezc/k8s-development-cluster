@@ -15,3 +15,11 @@ host i-* mi-*
     IdentityFile ~/.ssh/david-key.pem
     IdentitiesOnly yes
 ```
+
+## Prometheus
+
+What is the best combination of tools for monitoring, logging, and alerting in Kubernetes?
+
+#prometheus #grafana #loki #robusta
+
+https://www.youtube.com/watch?v=XR_yWlOEGiA&t=99s

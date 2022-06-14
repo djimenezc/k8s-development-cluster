@@ -1,0 +1,26 @@
+GRAFANA_NAMESPACE ?= monitoring
+
+grafana-chart-add-repository:
+	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo update
+
+grafana-chart-install:
+	helm upgrade --install \
+        loki grafana/loki-stack \
+        --namespace $(GRAFANA_NAMESPACE) \
+        --create-namespace \
+        --wait
+	helm upgrade --install \
+        grafana grafana/grafana \
+        --namespace $(GRAFANA_NAMESPACE) \
+        --create-namespace \
+        --values grafana/grafana-values.yaml \
+        --set "ingress.hosts[0]=grafana.${INGRESS_HOST}.nip.io" \
+        --wait
+    echo "http://grafana.${INGRESS_HOST}.nip.io"
+
+grafana-get-admin-password:
+	kubectl --namespace $(GRAFANA_NAMESPACE) \
+        get secret grafana \
+        --output jsonpath="{.data.admin-password}" \
+        | base64 --decode ; echo

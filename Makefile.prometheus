@@ -1,0 +1,15 @@
+PROMETHEUS_NAMESPACE ?= monitoring
+
+prometheus-chart-add-repository:
+	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+	helm repo update
+
+prometheus-chart-install:
+	helm upgrade --install \
+        prometheus prometheus-community/prometheus \
+        --namespace $(PROMETHEUS_NAMESPACE) \
+        --create-namespace \
+        --values prometheus/prometheus-values.yaml \
+        --set "server.ingress.hosts[0]=prometheus.${INGRESS_HOST}.nip.io" \
+        --wait
+	echo "http://prometheus.${INGRESS_HOST}.nip.io"
