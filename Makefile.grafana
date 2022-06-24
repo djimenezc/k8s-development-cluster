@@ -4,12 +4,7 @@ grafana-chart-add-repository:
 	helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo update
 
-grafana-chart-install:
-	helm upgrade --install \
-        loki grafana/loki-stack \
-        --namespace $(GRAFANA_NAMESPACE) \
-        --create-namespace \
-        --wait
+grafana-chart-install: grafana-chart-loki-install
 	helm upgrade --install \
         grafana grafana/grafana \
         --namespace $(GRAFANA_NAMESPACE) \
@@ -18,6 +13,13 @@ grafana-chart-install:
         --set "ingress.hosts[0]=grafana.${INGRESS_HOST}.nip.io" \
         --wait
     echo "http://grafana.${INGRESS_HOST}.nip.io"
+
+grafana-chart-loki-install:
+	helm upgrade --install \
+		loki grafana/loki-stack \
+		--namespace $(GRAFANA_NAMESPACE) \
+		--create-namespace \
+		--wait
 
 grafana-get-admin-password:
 	kubectl --namespace $(GRAFANA_NAMESPACE) \

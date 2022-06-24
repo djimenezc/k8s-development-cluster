@@ -38,6 +38,9 @@ aws-ec2-terminate:
 aws-ec2-stop:
 	aws ec2 stop-instances --instance-ids $(INSTANCE_ID)
 
+aws-ec2-hibernate:
+	aws ec2 stop-instances --instance-ids $(INSTANCE_ID) --hibernate
+
 aws-ec2-start:
 	aws ec2 start-instances --instance-ids $(INSTANCE_ID)
 

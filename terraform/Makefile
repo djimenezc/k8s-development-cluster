@@ -1,5 +1,5 @@
-SELF_DIR_SCRIPTS := $(dir $(lastword $(MAKEFILE_LIST)))
-TERRAFORM_FOLDER ?= $(SELF_DIR_SCRIPTS)ec2-schedule-start-stop
+SELF_DIR_TERRAFORM := $(dir $(lastword $(MAKEFILE_LIST)))
+TERRAFORM_FOLDER ?= $(SELF_DIR_TERRAFORM)ec2-schedule-start-stop
 TF_STATE_BUCKET_NAME ?= david-terraform-remote-state-${AWS_DEFAULT_REGION}
 export KEY_NAME ?= terraform.tfstate
 export TF_VAR_aws_region ?= ${AWS_DEFAULT_REGION}

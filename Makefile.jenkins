@@ -27,7 +27,7 @@ jenkins-chart-uninstall:
 	kubectl delete -f jenkins/ingress.yml -n $(JENKINS_NAMESPACE_NAME)
 
 jenkins-get-admin-password:
-	kubectl exec --namespace jenkins -it svc/myjenkins -c jenkins -- /bin/cat /run/secrets/chart-admin-password && echo
+	kubectl get secret --namespace jenkins myjenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode && echo
 
 jenkins-port-forwarding:
 	@echo http://127.0.0.1:$(JENKINS_LOCAL_PORT)

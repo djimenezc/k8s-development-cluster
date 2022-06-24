@@ -26,6 +26,10 @@ argocd-get-admin-password:
 argocd-apps-create-namespace:
 	-kubectl create namespace argocd-apps
 
+#https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/
+argocd-ingress-apply:
+	kubectl apply -f ./ingress/argocd-nginx-ingress.yml
+
 
 argocd-app-deploy: argocd-apps-create-namespace
 	@echo deploying appName: $(ARGO_DEMO_APP_NAME)

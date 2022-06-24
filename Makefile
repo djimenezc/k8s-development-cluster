@@ -19,6 +19,7 @@ kind-cluster-get-info:
 -include ./Makefile.grafana
 -include ./Makefile.qemu
 -include ./Makefile.aws
+-include ./Makefile.robusta
 -include ./scripts/Makefile
 -include ./ansible/Makefile
 -include ./terraform/Makefile

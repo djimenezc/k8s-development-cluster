@@ -8,10 +8,11 @@ metadata:
     nginx.ingress.kubernetes.io/add-base-url: "true"
 spec:
   rules:
-    - http:
+    - host: jenkins.127.0.0.1.nip.io
+      http:
         paths:
           - pathType: Prefix
-            path: "/jenkins"
+            path: "/"
             backend:
               service:
                 name: myjenkins
