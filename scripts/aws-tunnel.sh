@@ -5,7 +5,7 @@ LOCAL_PORT=$3
 #ASSUME_ROLE_NAME=$3
 #REGION=$4
 
-JUMPER_MACHINE_ID=david_security_scanner
+JUMPER_MACHINE_ID=$4
 
 #check if they exist to throw an error
 
