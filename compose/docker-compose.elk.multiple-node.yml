@@ -1,0 +1,86 @@
+version: "3.8"
+services:
+  # Master node
+  es-master:
+    container_name: es-master
+    hostname: es-master
+    image: elasticsearch:7.17.3
+    restart: always
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch/es-master/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins/analysis-ik:/usr/share/elasticsearch/plugins/analysis-ik
+      - ./elasticsearch/es-master/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-master/logs:/usr/share/elasticsearch/logs
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      test: curl -s http://es-master:9200/_cluster/health?wait_for_status=green&timeout=1s >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    networks:
+      capi:
+        aliases:
+        - es-master
+
+  es-node-1:
+    container_name: es-node-1
+    image: elasticsearch:7.17.3
+    restart: always
+    volumes:
+      - ./elasticsearch/es-node-1/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins/analysis-ik:/usr/share/elasticsearch/plugins/analysis-ik
+      - ./elasticsearch/es-node-1/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-node-1/logs:/usr/share/elasticsearch/logs
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      test: curl -s http://es-node-1:9200/_cluster/health?wait_for_status=green&timeout=1s >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      capi:
+        aliases:
+          - es-node-1
+
+  es-node-2:
+    container_name: es-node-2
+    image: elasticsearch:7.17.3
+    restart: always
+    volumes:
+      - ./elasticsearch/es-node-2/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/plugins/analysis-ik:/usr/share/elasticsearch/plugins/analysis-ik
+      - ./elasticsearch/es-node-2/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/es-node-2/logs:/usr/share/elasticsearch/logs
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      test: curl -s http://es-node-2:9200/_cluster/health?wait_for_status=green&timeout=1s >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      capi:
+        aliases:
+          - es-node-2
+
+networks:
+  capi:
+    external:
+      name: capi

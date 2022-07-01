@@ -1,0 +1,17 @@
+cluster.name: es-cluster
+node.name: es-node-2
+node.master: false
+node.data: true
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+discovery.seed_hosts:
+  - es-master
+  - es-node-1
+  - es-node-2
+cluster.initial_master_nodes:
+  - es-master
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+xpack.security.enabled: false
+bootstrap.memory_lock: true 

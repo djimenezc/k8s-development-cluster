@@ -1,3 +1,4 @@
-
+/compose/elasticsearch/**/logs/
+/compose/elasticsearch/**/data/
 
 /jenkins/values.*.yml

@@ -1,0 +1,79 @@
+#mysql
+MYSQL_HOST ?= 127.0.0.1
+MYSQL_PORT ?= 3306
+MYSQL_USER ?= root
+MYSQL_PASSWORD ?=
+MYSQL_DATABASE ?= euomf
+MYSQL_DUMP_FILE ?= mysql/mysql_local_dump.sql
+
+MYSQL_PASSWORD_STRING = $(if $(MYSQL_PASSWORD), --password=$(MYSQL_PASSWORD), -p)
+
+docker-ssh-mysql:
+	@echo "Connecting to $(MYSQL_CONTAINER_ID)"
+	docker exec -it $(MYSQL_CONTAINER_ID) /bin/bash
+
+docker-logs-mysql:
+	docker logs $(MYSQL_CONTAINER_ID)
+
+mysql-load-global-variables:
+	mysql -h $(MYSQL_HOST) -P $(MYSQL_PORT) -u $(MYSQL_USER) $(MYSQL_PASSWORD_STRING) < ./mysql/global_variables.sql
+
+mysql-client:
+	mysql -h $(MYSQL_HOST) -P $(MYSQL_PORT) -u $(MYSQL_USER) \
+		$(MYSQL_PASSWORD_STRING) $(MYSQL_DATABASE)
+
+mysql-dump-data:
+	mysqldump -h $(MYSQL_HOST) -P $(MYSQL_PORT) -u $(MYSQL_USER) \
+	--password='$(MYSQL_PASSWORD)' --column-statistics=0 \
+ 	--lock-tables=false --no-create-info --no-tablespaces $(MYSQL_DATABASE) > mysql/mydb_data.sql
+
+mysql-restore-dump-local: mysql-load-global-variables
+	mysql -h $(MYSQL_HOST) -P $(MYSQL_PORT) -u $(MYSQL_USER) \
+	$(MYSQL_PASSWORD_STRING) $(MYSQL_DATABASE) < $(MYSQL_DUMP_FILE)
+
+mysql-mermaid-ssh:
+	docker run -it --rm --entrypoint='/bin/bash' \
+		--network capi \
+		schemacrawler/schemacrawler
+
+mysql-mermaid-generate-diagram-md:
+	docker run \
+		--network="host" \
+		--mount type=bind,source="$(PWD)",target=/home/schcrwlr \
+		--platform linux/amd64 \
+		--rm \
+		schemacrawler/schemacrawler \
+		/opt/schemacrawler/bin/schemacrawler.sh \
+		--server mysql \
+		--host localhost \
+		--port 3306 \
+		--user user \
+		--password welovecoupons \
+		--database euomf \
+		--info-level standard \
+		--command script \
+		--script-language python \
+		--script mermaid.py \
+		--output-file database-diagram.md
+	@echo 'Cleaning md file'
+	@cat database-diagram.md | sed 's/\euomf\.//g' | sed 's/\"user\"/user/g' > docs/generated/database-diagram.md
+	@rm database-diagram.md
+
+mysql-mermaid-generate-diagram:
+	docker run \
+		--network="host" \
+		--mount type=bind,source="$(PWD)",target=/home/schcrwlr \
+		--platform linux/amd64 \
+		--rm \
+		schemacrawler/schemacrawler \
+		/opt/schemacrawler/bin/schemacrawler.sh \
+		--server mysql \
+		--host localhost \
+		--port 3306 \
+		--user user \
+		--password welovecoupons \
+		--database euomf \
+		--info-level standard \
+		--command schema \
+		--output-file database-diagram.$(MERMAID_DIAGRAM_FORMAT)
+	@mv database-diagram.$(MERMAID_DIAGRAM_FORMAT) docs/generated/

@@ -1,0 +1,74 @@
+version: "3.8"
+services:
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.3
+    container_name: logstash
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    links:
+      - es-master
+    environment:
+      LS_JAVA_OPTS: -Xms256m -Xmx256m
+    #      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    healthcheck:
+      test: bin/logstash -t
+      interval: 60s
+      timeout: 50s
+      retries: 5
+    depends_on:
+      es-master:
+        condition: service_healthy
+    networks:
+      - capi
+
+  # kibana monitoring
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.3
+    container_name: kibana
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      es-master:
+        condition: service_healthy
+    healthcheck:
+      test: curl -s https://localhost:5601 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    environment:
+      - I18N_LOCALE=en
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
+    ports:
+      - "5601:5601"
+    networks:
+      capi:
+        aliases:
+          - kibana
+
+  # Cerebro
+  cerebro:
+    image: lmenezes/cerebro:0.8.3
+    container_name: cerebro
+    ports:
+      - "9000:9000"
+    depends_on:
+      es-master:
+        condition: service_healthy
+    command:
+      - -Dhosts.0.host=http://es-master:9200
+    networks:
+      - capi
+
+networks:
+  capi:
+    external:
+      name: capi
