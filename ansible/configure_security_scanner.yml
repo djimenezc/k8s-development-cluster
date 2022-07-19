@@ -24,6 +24,7 @@
       service:
         name: docker
         state: started
+        enabled: yes
 
 - hosts: tag_Name_david_security_scanner
   become: false
@@ -50,6 +51,11 @@
             repo: 'https://github.com/webpwnized/mutillidae-docker.git',
             version: '1.0.25'
         }
+        - {
+            name: 'docker-burp',
+            repo: 'https://github.com/pschiffe/docker-burp.git',
+            version: 'master'
+        }
 
 - hosts: tag_Name_david_security_scanner
   become: true
@@ -74,6 +80,13 @@
     - name: Start mutillidae website
       community.docker.docker_compose:
         project_src: sources/mutillidae-docker
+        build: no
+      vars:
+        ansible_python_interpreter: /bin/python3
+
+    - name: Start burp stack
+      community.docker.docker_compose:
+        project_src: sources/docker-burp
         build: no
       vars:
         ansible_python_interpreter: /bin/python3

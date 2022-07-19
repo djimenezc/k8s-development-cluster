@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: clone-of-pvc-jenkins-home
+    namespace: buildenv
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: cloning
+  resources:
+    requests:
+      storage: 5Gi
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: jenkins-home
