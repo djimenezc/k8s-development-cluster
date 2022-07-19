@@ -1,0 +1,41 @@
+{
+  "name": "devops-automation",
+  "repository": "github:djimenezc/devops-automation",
+  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Devops tools to automate everything in Savi",
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^8.0.5",
+    "cspell": "^6.3.0",
+    "eslint": "^8.20.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-markdownlint": "^0.4.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
+    "imagemin-lint-staged": "^0.5.1",
+    "lint-staged": "^13.0.3",
+    "markdownlint": "^0.26.0",
+    "markdownlint-cli": "^0.32.0",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1",
+    "semantic-release": "^19.0.3",
+    "zx": "7.0.7"
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "release": "semantic-release",
+    "test": "echo 'not implemented'",
+    "lint": "echo 'not implemented'",
+    "release:dry": "semantic-release --dry-run",
+    "prepare": "husky install",
+    "cspell": "cspell '**'",
+    "lint-staged": "lint-staged"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "ci": false,
+  "branches": [
+    "master"
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/git",
+      {
+        "message": "chore(release): ${nextRelease.version}"
+      }
+    ],
+    "@semantic-release/github"
+  ],
+  "repositoryUrl": "git@github.com:djimenezc/devops-automation.git"
+}

@@ -1,0 +1,11 @@
+{
+  "*": "cspell --no-summary --no-progress",
+  "*.{js,jsx,ts,tsx,html,css}": [
+    "prettier --write",
+    "eslint --fix"
+  ],
+  "*.scss": [
+    "postcss --config path/to/your/config --replace",
+    "stylelint"
+  ]
+}

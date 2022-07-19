@@ -1,0 +1,63 @@
+name: Security Scan Manual
+
+on:
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+      enable_automation_framework:
+        required: false
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Target URL'
+        required: true
+        type: string
+        default: 'https://couponbeard.com/thulium'
+      name:
+        description: 'Scan Id'
+        required: true
+        type: string
+        default: thulium
+      enable_automation_framework:
+        description: 'Enable ZAP automation framework'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+
+  scan:
+    runs-on: ubuntu-latest
+    name: Scan the web application ${{ inputs.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Sets env vars for zap parameters
+        run: |
+          echo "AF_PARAM=--autoof" >> $GITHUB_ENV
+        if: ${{ inputs.enable_automation_framework }}
+
+      - name: ZAP Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          issue_title: ZAP Scan Baseline Report ${{ inputs.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: ${{ inputs.url }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: -a ${{env.AF_PARAM}}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.name }}
+          path: zap_scan.zip
+          if-no-files-found: error
