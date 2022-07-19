@@ -19,6 +19,7 @@ jobs:
       options: --cpus 1
     steps:
       - uses: actions/checkout@v2
+
       - name: Cache node modules
         id: cache-npm
         uses: actions/cache@v3
@@ -40,12 +41,16 @@ jobs:
 
       - name: Disable git hooks
         run: npm set-script prepare ''
+
       - name: NPM Install
         run: npm install
+
       - name: Re-enable git hooks
         run: npm set-script prepare 'husky install'
+
       - name: Lint
         run: npm run lint
+
       - name: Test
         run: npm run test
 
@@ -56,6 +61,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           MERGE_METHOD: "squash"
           MERGE_DELETE_BRANCH: "true"
+
       - if: ${{ steps.automerge.outputs.mergeResult == 'merged' }}
         name: feedback
         run: |
