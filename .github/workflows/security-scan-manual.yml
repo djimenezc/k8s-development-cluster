@@ -55,6 +55,9 @@ jobs:
           rules_file_name: '.zap/rules.tsv'
           cmd_options: -a ${{env.AF_PARAM}}
 
+      - name: Show zap_scan.zip
+        run: ls -la
+        
       - name: Upload report
         uses: actions/upload-artifact@v3
         with:
