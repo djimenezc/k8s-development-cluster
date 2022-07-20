@@ -10,14 +10,15 @@ on:
 
 jobs:
 
-  scan-zap:
-    uses: ./.github/workflows/security-scan-baseline.yml
+  scan-zap-baseline:
+    uses: ./.github/workflows/security-scan-manual.yml
     with:
       url: 'https://www.zapproxy.org'
       name: 'zapproxy'
 
   scan-api:
-    uses: ./.github/workflows/security-scan-api.yml
+    uses: ./.github/workflows/security-scan-manual.yml
     with:
       url: 'https://zapsample.demo.community.intersystems.com/crudall/_spec'
       name: 'example-api'
+      type: 'api-scan'

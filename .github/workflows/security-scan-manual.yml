@@ -1,0 +1,123 @@
+name: Security Scan Manual
+
+on:
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+      type:
+        required: false
+        type: string
+        default: baseline
+      format:
+        required: false
+        type: string
+        default: openapi
+      enable_automation_framework:
+        required: false
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Target URL'
+        required: true
+        type: string
+        default: 'https://www.zapproxy.org'
+      name:
+        description: 'Scan Id'
+        required: true
+        type: string
+        default: zapproxy
+      type:
+        required: false
+        type: choice
+        description: 'Type of ZAP scanner'
+        default: baseline
+        options:
+          - baseline
+          - api-scan
+          - full-scan
+      format:
+        required: true
+        type: choice
+        description: 'Only apply for type api-scan'
+        default: openid
+        options:
+          - openapi
+          - soap
+          - graphql
+      enable_automation_framework:
+        description: 'Enable ZAP automation framework. Only apply for 
+        baseline type'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+
+  scan:
+    runs-on: ubuntu-latest
+    name: Scan the web application ${{ inputs.name }} ${{ inputs.type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Sets env vars for zap parameters
+        run: |
+          echo "AF_PARAM=--autoof" >> $GITHUB_ENV
+        if: ${{ inputs.enable_automation_framework }}
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          issue_title: ZAP ${{ inputs.type }} Scan Report ${{ inputs.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: ${{ inputs.url }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: -a ${{env.AF_PARAM}}
+        if: inputs.type == 'baseline'
+
+      - name: ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.1.1
+        with:
+          issue_title: ZAP ${{ inputs.type }} Scan Report ${{ inputs.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: ${{ inputs.url }}
+          format: ${{ inputs.format }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: -a
+        if: inputs.type == 'api-scan'
+
+      - name: ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.4.0
+        with:
+          issue_title: ZAP ${{ inputs.type }} Scan Report ${{ inputs.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'owasp/zap2docker-stable'
+          target: ${{ inputs.url }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: -a
+        if: inputs.type == 'full-scan'
+
+      - name: Show zap_scan.zip
+        run: ls -la
+
+      - name: Upload report zip
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.name }}-${{ inputs.type }}
+          path: zap_scan.zip
+
+      - name: Upload report html
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.name }}-${{ inputs.type }}_html
+          path: report_html.html
+          if-no-files-found: error
