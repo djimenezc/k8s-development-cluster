@@ -1,4 +1,4 @@
-name: Security Scan API Manual
+name: Security Scan Full
 
 on:
   workflow_call:
@@ -15,18 +15,18 @@ on:
         description: 'Target URL'
         required: true
         type: string
-        default: https://zapsample.demo.community.intersystems.com/crudall/_spec
+        default: https://www.zapproxy.org
       name:
         description: 'Scan Id'
         required: true
         type: string
-        default: zap API
+        default: capi API
 
 jobs:
 
   capi_scan:
     runs-on: ubuntu-latest
-    name: Scan the API application SAVI
+    name: Scan the application ${{ inputs.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

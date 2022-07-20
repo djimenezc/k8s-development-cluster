@@ -1,26 +1,23 @@
 name: Security Scan
 
 on:
+  schedule:
+    # Runs every day At 01:00.
+    - cron: '0 1 * * *'
   push:
     branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
 
-  scan-thulium:
-    uses: ./.github/workflows/security-scan-manual.yml
-    with:
-      url: 'https://couponbeard.com/thulium'
-      name: 'thulium'
-
-  scan-couponbeard:
-    uses: ./.github/workflows/security-scan-manual.yml
-    with:
-      url: 'https://couponbeard.com'
-      name: 'couponbeard'
-
   scan-zap:
-    uses: ./.github/workflows/security-scan-manual.yml
+    uses: ./.github/workflows/security-scan-baseline.yml
     with:
       url: 'https://www.zapproxy.org'
       name: 'zapproxy'
+
+  scan-api:
+    uses: ./.github/workflows/security-scan-api.yml
+    with:
+      url: 'https://zapsample.demo.community.intersystems.com/crudall/_spec'
+      name: 'example-api'
