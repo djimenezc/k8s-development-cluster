@@ -21,6 +21,16 @@ on:
         required: false
         type: boolean
         default: true
+      enable_ajax_spider:
+        description: 'Enable ZAP ajax spider'
+        required: false
+        type: boolean
+        default: false
+      zap_context:
+        required: false
+        type: string
+        default:
+
   workflow_dispatch:
     inputs:
       url:
@@ -57,6 +67,16 @@ on:
         required: false
         type: boolean
         default: true
+      enable_ajax_spider:
+        description: 'Enable ZAP ajax spider'
+        required: false
+        type: boolean
+        default: false
+      zap_context:
+        description: 'Zap context'
+        required: false
+        type: string
+        default:
 
 jobs:
 
@@ -67,10 +87,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Sets env vars for zap parameters
+      - name: Sets env vars for zap automation framework
         run: |
           echo "AF_PARAM=--autoof" >> $GITHUB_ENV
-        if: ${{ inputs.enable_automation_framework }}
+        if: inputs.enable_automation_framework == false
+
+      - name: Sets env vars for zap context
+        run: |
+          echo "ZAP_CONTEXT=-n zap/${{ inputs.zap_context }}" >> $GITHUB_ENV
+        if: inputs.zap_context != ''
+
+      - name: Sets env vars for zap ajax spider
+        run: |
+          echo "ZAP_AJAX_SPIDER=-j" >> $GITHUB_ENV
+        if: inputs.enable_ajax_spider
+
+      - name: Sets env vars for zap parameters
+        run: |
+          echo "ZAP_PARAMS=-a ${{ env.ZAP_AJAX_SPIDER }} ${{env.ZAP_CONTEXT}}" >> $GITHUB_ENV
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.7.0
@@ -80,7 +114,7 @@ jobs:
           docker_name: 'owasp/zap2docker-stable'
           target: ${{ inputs.url }}
           rules_file_name: '.zap/rules.tsv'
-          cmd_options: -a ${{env.AF_PARAM}}
+          cmd_options: ${{env.ZAP_PARAMS}} ${{env.AF_PARAM}} ${{env.ZAP_CONTEXT}}
         if: inputs.type == 'baseline'
 
       - name: ZAP API Scan
@@ -92,7 +126,7 @@ jobs:
           target: ${{ inputs.url }}
           format: ${{ inputs.format }}
           rules_file_name: '.zap/rules.tsv'
-          cmd_options: -a
+          cmd_options: ${{env.ZAP_PARAMS}}
         if: inputs.type == 'api-scan'
 
       - name: ZAP Full Scan
@@ -103,17 +137,17 @@ jobs:
           docker_name: 'owasp/zap2docker-stable'
           target: ${{ inputs.url }}
           rules_file_name: '.zap/rules.tsv'
-          cmd_options: -a
+          cmd_options: ${{env.ZAP_PARAMS}}
         if: inputs.type == 'full-scan'
 
       - name: Show zap_scan.zip
         run: ls -la
 
-      - name: Upload report zip
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ inputs.name }}-${{ inputs.type }}
-          path: zap_scan.zip
+      #      - name: Upload report zip
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: ${{ inputs.name }}-${{ inputs.type }}
+      #          path: zap_scan.zip
 
       - name: Upload report html
         uses: actions/upload-artifact@v3
