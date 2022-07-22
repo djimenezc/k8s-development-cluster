@@ -1,5 +1,10 @@
 # deploy a local development k8s cluster with kind
 
+[![CI](https://github.com/djimenezc/devops-automation/actions/workflows/CI.yml/badge.svg)](https://github.com/djimenezc/devops-automation/actions/workflows/CI.yml)
+[![Dependency Review](https://github.com/djimenezc/devops-automation/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/djimenezc/devops-automation/actions/workflows/dependency-review.yml)
+[![Security Scan](https://github.com/djimenezc/devops-automation/actions/workflows/security-scan.yml/badge.svg)](https://github.com/djimenezc/devops-automation/actions/workflows/security-scan.yml)
+[![release](https://github.com/djimenezc/devops-automation/actions/workflows/release.yml/badge.svg)](https://github.com/djimenezc/devops-automation/actions/workflows/release.yml)
+
 - Deploy argocd
 - Deploy ingress controller
 

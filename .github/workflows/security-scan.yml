@@ -22,3 +22,12 @@ jobs:
       url: 'https://zapsample.demo.community.intersystems.com/crudall/_spec'
       name: 'example-api'
       type: 'api-scan'
+
+  scan-full:
+    needs: [scan-zap-baseline]
+    uses: ./.github/workflows/security-scan-manual.yml
+    with:
+      url: 'https://zapsample.demo.community.intersystems.com/crudall/_spec'
+      name: 'example-api'
+      type: 'api-scan'
+      enable_ajax_spider: true
