@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/djimenezc/devops-automation/compare/v1.1.0...v1.2.0) (2022-07-22)
+
+
+### Features
+
+* security: added rules.tsv ([d5c5ffc](https://github.com/djimenezc/devops-automation/commit/d5c5ffc4b0f30115b535713b78cbeb8ad97c06a7))
+
 # [1.1.0](https://github.com/djimenezc/devops-automation/compare/v1.0.0...v1.1.0) (2022-07-20)
 
 
